@@ -14,6 +14,8 @@ public class DataX {
 		ArrayList<String> fileList = ReadFiles.listFilesForFolder(folder);
 		for (String fileLoc : fileList)
 			System.out.println(fileLoc);
+		
+		Extractor.extract();
 	}
 
 }
