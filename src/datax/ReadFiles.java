@@ -16,7 +16,7 @@ public class ReadFiles {
 		  } else {
 		    if (fileEntry.isFile()) {
 		      temp = fileEntry.getName();
-		      if ((temp.substring(temp.lastIndexOf('.') + 1, temp.length()).toLowerCase()).equals("java")) {
+		      if ((temp.substring(temp.lastIndexOf('.') + 1, temp.length()).toLowerCase()).equals("txt")) {
 			  	  fileList.add(folder.getAbsolutePath() + "\\" + fileEntry.getName());
 		      }
 		    }		
@@ -24,4 +24,5 @@ public class ReadFiles {
 		}
 		return fileList;
 	}
+	
 }
