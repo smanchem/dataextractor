@@ -33,7 +33,7 @@ public class Extractor {
 				return;
 			}
 			
-			if (fsePioneerError[0] != null) System.out.println("Pioneer Errors = " + fsePioneerError[0].timeBegin);
+			// if (fsePioneerError[0] != null) System.out.println("Pioneer Errors = " + fsePioneerError[0].timeBegin);
 			
 			try {
 				runStatsRed[0] = extractFSEInfo(runT1, fsedata);
@@ -81,7 +81,7 @@ public class Extractor {
 		wrongRepCount = reactionTime;
 		int correctResponseTime = 0;
 		int logMissedCount = 0, logCount = 0, connectionCheckCount = 0, connCheckTime = 0;
-		String[] wrongRepair = new String[10];
+		String[] wrongRepair = new String[30];
 		String repair = null;
 		int errorCount = 0;
 		boolean errorOnGoing = false;
@@ -384,7 +384,7 @@ public class Extractor {
 				wrongRepCount = reactionTime;
 				int correctResponseTime = 0;
 				int logMissedCount = 0, logCount = 0, connectionCheckCount = 0, connCheckTime = 0;
-				String[] wrongRepair = new String[10];
+				String[] wrongRepair = new String[30];
 				String repair = null;
 				int errorCount = 0;
 				boolean errorOnGoing = false;
@@ -515,6 +515,10 @@ public class Extractor {
 													} else if (state.phase.equals("RED_REPAIR") && wrongRep) {
 																repBegin = state.time;
 																errInf[errorCount -1].repCount++;
+																//System.out.println(errorCount);
+																//System.out.println(errInf[errorCount -1].repCount);
+																//System.out.println(errInf[errorCount -1].repCount -1);
+																//System.out.println(errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1]);
 																errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1] = repBegin - errBegin;
 																wrongRep = false;
 															} else if (state.phase.equals("RED_NO_ERROR")) {

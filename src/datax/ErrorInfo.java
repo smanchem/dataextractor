@@ -21,10 +21,10 @@ public class ErrorInfo {
 	public ErrorInfo(int time, String error) {
 		errorOccurred = error;
 		timeOccurred = time;
-		timeToRespond = new int[10];
+		timeToRespond = new int[30];
 		timeToCorrectResponse = 9999;
 		repCount = 0;
-		repairOrdered = new String[10];
+		repairOrdered = new String[30];
 		repComplete = 9999;
 		repairAttempted = false;
 	}
