@@ -7,7 +7,8 @@ public class RunStatsInRed {
 	int connChecksMissed;
 	int totalConnChecks;
 	double connChecksMissedPercentage;
-	int delay;
+	int delay;		// yes = 1, no = 0 
+	int totalTimeInRed;
 	
 	public RunStatsInRed(){
 		

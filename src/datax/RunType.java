@@ -22,7 +22,7 @@ public class RunType {
 			this.fileName = fileLoc.substring((fileLoc.indexOf("voice")+6));
 		} else {
 			this.medium = 1;
-			this.fileName = fileLoc.substring((fileLoc.indexOf("voice")+5));
+			this.fileName = fileLoc.substring((fileLoc.indexOf("text")+5));
 		}		
 	}
 }
