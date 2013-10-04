@@ -1,7 +1,7 @@
 package datax;
 
 import java.io.*;
-import java.util.*;
+//import java.util.*;
 
 public class Extractor {
 	public static FSE_PioneerErrors[] fsePioneerError;
@@ -33,6 +33,15 @@ public class Extractor {
 				return;
 			}
 			
+			BufferedWriter feedbackWriter2 = new BufferedWriter(new FileWriter(pdata, true));
+			for (int i = 0; i < 4; i++) {
+				feedbackWriter2.write(FSE_PioneerErrors.pioneerErrors[i].fileName + "," + FSE_PioneerErrors.pioneerErrors[i].Error +"," + FSE_PioneerErrors.pioneerErrors[i].leg + ","+ FSE_PioneerErrors.pioneerErrors[i].delay + "," + FSE_PioneerErrors.pioneerErrors[i].medium + ",");
+				feedbackWriter2.write(FSE_PioneerErrors.pioneerErrors[i].correctRepair +","+ FSE_PioneerErrors.pioneerErrors[i].timeInRed +","+ FSE_PioneerErrors.pioneerErrors[i].incorrectRepairs +",");
+				feedbackWriter2.write(FSE_PioneerErrors.pioneerErrors[i].o2TankClicks +","+ FSE_PioneerErrors.pioneerErrors[i].o2FlowMeter +","+ FSE_PioneerErrors.pioneerErrors[i].n2TankClicks +","+ FSE_PioneerErrors.pioneerErrors[i].n2FlowMeter +","+ FSE_PioneerErrors.pioneerErrors[i].mixerFlowMeter +",");
+				feedbackWriter2.write(FSE_PioneerErrors.pioneerErrors[i].co2HistoryGraph +","+ FSE_PioneerErrors.pioneerErrors[i].o2HistoryGraph +","+ FSE_PioneerErrors.pioneerErrors[i].n2HistoryGraph +","+ FSE_PioneerErrors.pioneerErrors[i].tempHistoryGraph +","+ FSE_PioneerErrors.pioneerErrors[i].humidityHistoryGraph +","+ FSE_PioneerErrors.pioneerErrors[i].flowRates +",");
+				feedbackWriter2.write(FSE_PioneerErrors.pioneerErrors[i].co2LogsMissed + "," + FSE_PioneerErrors.pioneerErrors[i].co2LogsMissedPercentage + "," + FSE_PioneerErrors.pioneerErrors[i].connChecksMissed + "," +  FSE_PioneerErrors.pioneerErrors[i].connChecksMissedPercentage + ",");
+			}			
+			
 			// if (fsePioneerError[0] != null) System.out.println("Pioneer Errors = " + fsePioneerError[0].timeBegin);
 			
 			try {
@@ -54,7 +63,7 @@ public class Extractor {
 			BufferedWriter feedbackWriter = new BufferedWriter(new FileWriter(fsedata, true));
 			for (int i = 0; i<2; i++)
 				feedbackWriter.write(runStatsRed[i].totalTimeInRed +","+ runStatsRed[1].co2LogsMissed +","+ runStatsRed[i].co2LogsMissedPercentage +","+ runStatsRed[i].connChecksMissed +","+ runStatsRed[i].connChecksMissedPercentage + ",");
-			BufferedWriter feedbackWriter2 = new BufferedWriter(new FileWriter(pdata, true));
+			
 			for (int i = 2; i<4; i++)
 				feedbackWriter2.write(runStatsRed[i].totalTimeInRed +","+ runStatsRed[1].co2LogsMissed +","+ runStatsRed[i].co2LogsMissedPercentage +","+ runStatsRed[i].connChecksMissed +","+ runStatsRed[i].connChecksMissedPercentage + ",");
 			feedbackWriter.close();
@@ -87,8 +96,9 @@ public class Extractor {
 		boolean errorOnGoing = false;
 		ErrorInfo[] errInf = new ErrorInfo[10];
 		
-		int pErr1Begin, pErr1End, pErr2Begin, pErr2End;
 		/*
+		int pErr1Begin, pErr1End, pErr2Begin, pErr2End;
+		
 		if (fsePioneerError[0] != null && fsePioneerError[0].leg == runT.leg) {
 			pErr1Begin = fsePioneerError[0].timeBegin;
 			pErr1End = fsePioneerError[0].timeEnd;
@@ -193,11 +203,11 @@ public class Extractor {
 												errorStatsList[errorCount-1].n2FlowMeter++;
 											}
 											break;
-					case "o2_tank_display":	if (errorOnGoing) {
+					case "ox_tank_display":	if (errorOnGoing) {
 												errorStatsList[errorCount-1].o2TankClicks++;
 											}
 											break;
-					case "o2_second":	if (errorOnGoing) {
+					case "ox_second":	if (errorOnGoing) {
 											errorStatsList[errorCount-1].o2FlowMeter++;
 										}
 										break;
@@ -322,10 +332,12 @@ public class Extractor {
 		String repCompTime, timeCorrResp;
 		for (int i = 0; i < errorCount; i++) {
 			//errorStatsList[i] = new ErrorStats();
+			errorStatsList[i].connChecksMissedPercentage = runStatsRed.connChecksMissedPercentage;
+			errorStatsList[i].co2LogsMissedPercentage = runStatsRed.co2LogsMissedPercentage;
 			if(errInf[i].repComplete == 9999) {
 				repCompTime = "Repair Failed";
 				timeCorrResp = "Never";
-				errorStatsList[i].correctRepair = false;
+				errorStatsList[i].correctRepair = 0;
 				errorStatsList[i].timeInRed = errInf[i].timeToCorrectResponse - errInf[i].timeOccurred;
 				errorStatsList[i].incorrectRepairs = errInf[i].repCount;
 			} else {
@@ -333,7 +345,7 @@ public class Extractor {
 				timeCorrResp = Integer.toString(errInf[i].timeToCorrectResponse);
 				errorStatsList[i].timeInRed = errInf[i].repComplete - errInf[i].timeOccurred;
 				errorStatsList[i].incorrectRepairs = errInf[i].repCount;
-				errorStatsList[i].correctRepair = true;
+				errorStatsList[i].correctRepair = 1;
 			}
 			//System.out.println(errInf[i].errorOccurred + ";" + errInf[i].timeOccurred + ";" + timeCorrResp + ";" + (errInf[i].repCount) + ";" + repCompTime);
 			//feedbackWriter.write("Error Occurred: "+errInf[i].errorOccurred + "; At: " + errInf[i].timeOccurred + "; Time for Correct Repair: " + timeCorrResp + "; Number of Repairs Attempted: " +  (errInf[i].repCount) + "; Repair Completed At: " + repCompTime);
@@ -368,7 +380,7 @@ public class Extractor {
 		System.out.println(runT.fileName);
 		// Read the inFile line by line and print everything to console and outFile.
 				BufferedReader reader = new BufferedReader(new FileReader(runT.fileLoc));
-				BufferedWriter feedbackWriter = new BufferedWriter(new FileWriter(pdata, true));
+				//BufferedWriter feedbackWriter = new BufferedWriter(new FileWriter(pdata, true));
 				RunStatsInRed runStatsRed = new RunStatsInRed();
 				ErrorStats[] errorStatsList = new ErrorStats[15];
 				
@@ -462,11 +474,11 @@ public class Extractor {
 														errorStatsList[errorCount-1].n2FlowMeter++;
 													}
 													break;
-							case "o2_tank_display":	if (errorOnGoing) {
+							case "ox_tank_display":	if (errorOnGoing) {
 														errorStatsList[errorCount-1].o2TankClicks++;
 													}
 													break;
-							case "o2_second":	if (errorOnGoing) {
+							case "ox_second":	if (errorOnGoing) {
 													errorStatsList[errorCount-1].o2FlowMeter++;
 												}
 												break;
@@ -594,11 +606,17 @@ public class Extractor {
 				
 				String repCompTime, timeCorrResp;
 				for (int i = 0; i < errorCount; i++) {
+					errorStatsList[i].fileName = runT.fileName;
+					errorStatsList[i].leg = runT.leg;
+					errorStatsList[i].medium = runT.medium;
+					errorStatsList[i].delay = runT.delay;
+					errorStatsList[i].connChecksMissedPercentage = runStatsRed.connChecksMissedPercentage;
+					errorStatsList[i].co2LogsMissedPercentage = runStatsRed.co2LogsMissedPercentage;
 					//errorStatsList[i] = new ErrorStats();
 					if(errInf[i].repComplete == 9999) {
 						repCompTime = "Repair Failed";
 						timeCorrResp = "Never";
-						errorStatsList[i].correctRepair = false;
+						errorStatsList[i].correctRepair = 0;
 						errorStatsList[i].timeInRed = errInf[i].timeToCorrectResponse - errInf[i].timeOccurred;
 						errorStatsList[i].incorrectRepairs = errInf[i].repCount;
 					} else {
@@ -606,7 +624,7 @@ public class Extractor {
 						timeCorrResp = Integer.toString(errInf[i].timeToCorrectResponse);
 						errorStatsList[i].timeInRed = errInf[i].repComplete - errInf[i].timeOccurred;
 						errorStatsList[i].incorrectRepairs = errInf[i].repCount;
-						errorStatsList[i].correctRepair = true;
+						errorStatsList[i].correctRepair = 1;
 					}
 					//System.out.println(errInf[i].errorOccurred + ";" + errInf[i].timeOccurred + ";" + timeCorrResp + ";" + (errInf[i].repCount) + ";" + repCompTime);
 					//feedbackWriter.write("Error Occurred: "+errInf[i].errorOccurred + "; At: " + errInf[i].timeOccurred + "; Time for Correct Repair: " + timeCorrResp + "; Number of Repairs Attempted: " +  (errInf[i].repCount) + "; Repair Completed At: " + repCompTime);
@@ -619,15 +637,30 @@ public class Extractor {
 					
 				}
 				int totalTimeInRed = 0;
-				for (int i = 0; i < errorCount; i++) {
+				System.out.println("Error Count: " + errorCount);
+				for (int i = 0; i < errorCount; i++) {					
 					//System.out.println(errorStatsList[i].co2HistoryGraph +","+ errorStatsList[i].o2HistoryGraph +","+ errorStatsList[i].n2HistoryGraph +","+ errorStatsList[i].tempHistoryGraph +","+ errorStatsList[i].humidityHistoryGraph +","+ errorStatsList[i].flowRates +",");
 					//feedbackWriter.write("At "+errInf[i].timeToRespond[j] + " seconds; Attempted Repair: " + errInf[i].repairOrdered[j]);
+					switch(errorStatsList[i].Error) {
+						case "NITROGEN_VALVE_LEAK" : FSE_PioneerErrors.pioneerErrors[0] = errorStatsList[i];
+													 break;
+						case "OXYGEN_VALVE_STUCK_OPEN" : FSE_PioneerErrors.pioneerErrors[1] = errorStatsList[i];
+						 								 break;
+						case "MIXER_BLOCK" : FSE_PioneerErrors.pioneerErrors[2] = errorStatsList[i];
+						 					 break;
+						case "OXYGEN_SENSOR_STARTS_LOWER_TH" : FSE_PioneerErrors.pioneerErrors[3] = errorStatsList[i];
+						 									   break;
+						default: break;
+					}
+					/*
 					feedbackWriter.write(runT.fileName + "," + errorStatsList[i].Error +"," + runT.leg + ","+ runT.delay + "," + runT.medium + ",");
 					feedbackWriter.write(errorStatsList[i].correctRepair +","+ errorStatsList[i].timeInRed +","+ errorStatsList[i].incorrectRepairs +",");
 					feedbackWriter.write(errorStatsList[i].o2TankClicks +","+ errorStatsList[i].o2FlowMeter +","+ errorStatsList[i].n2TankClicks +","+ errorStatsList[i].n2FlowMeter +","+ errorStatsList[i].mixerFlowMeter +",");
 					feedbackWriter.write(errorStatsList[i].co2HistoryGraph +","+ errorStatsList[i].o2HistoryGraph +","+ errorStatsList[i].n2HistoryGraph +","+ errorStatsList[i].tempHistoryGraph +","+ errorStatsList[i].humidityHistoryGraph +","+ errorStatsList[i].flowRates +",");
 					feedbackWriter.write(errorStatsList[i].co2LogsMissed + "," + errorStatsList[i].co2LogsMissedPercentage + "," + errorStatsList[i].connChecksMissed + "," +  errorStatsList[i].connChecksMissedPercentage + ",");
+					*/
 					totalTimeInRed = totalTimeInRed + errorStatsList[i].timeInRed;
+					
 					//System.out.println(totalTimeInRed);
 				}
 				
@@ -674,7 +707,7 @@ public class Extractor {
 					
 				}
 				reader.close();
-				feedbackWriter.close();
+				//feedbackWriter.close();
 				//clicksWriter.close();				
 				return runStatsRed;
 		}

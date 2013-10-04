@@ -2,7 +2,9 @@ package datax;
 
 public class ErrorStats {
 	String Error;
-	boolean correctRepair;
+	String fileName;
+	int leg, delay, medium;
+	int correctRepair;		// 0 = no, 1 = yes
 	int timeOccurred;
 	int timeInRed;
 	int incorrectRepairs;
@@ -26,7 +28,8 @@ public class ErrorStats {
 	
 	public ErrorStats(int time, String error) {
 		Error = error;
-		correctRepair = false;
+		fileName = null;
+		correctRepair = 0;
 		timeOccurred = time;
 		timeInRed = 0;
 		incorrectRepairs = 0;
@@ -51,7 +54,8 @@ public class ErrorStats {
 	
 	public ErrorStats() {
 		Error = null;
-		correctRepair = false;
+		fileName = null;
+		correctRepair = 0;
 		timeOccurred = 0;
 		timeInRed = 0;
 		incorrectRepairs = 0;
