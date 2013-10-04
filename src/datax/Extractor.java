@@ -1,7 +1,6 @@
 package datax;
 
 import java.io.*;
-//import java.util.*;
 
 public class Extractor {
 	public static FSE_PioneerErrors[] fsePioneerError = new FSE_PioneerErrors[4];
@@ -20,14 +19,12 @@ public class Extractor {
 		
 			try {
 				runStatsRed[2] = extractPInfo(runT3, pdata);
-				//System.out.println("time in red is " + runStatsRed[2].totalTimeInRed);
 			} catch (IOException ioe) {
 				System.err.println(ioe);
 				return;
 			}
 			try {
 				runStatsRed[3] = extractPInfo(runT4, pdata);
-				//System.out.println("time in red is " + runStatsRed[3].totalTimeInRed);
 			} catch (IOException ioe) {
 				System.err.println(ioe);
 				return;
@@ -51,14 +48,12 @@ public class Extractor {
 			
 			try {
 				runStatsRed[0] = extractFSEInfo(runT1, fsedata);
-				//System.out.println("time in red is " + runStatsRed[0].totalTimeInRed);
 			} catch (IOException ioe) {
 				System.err.println(ioe);
 				return;
 			}
 			try {
 				runStatsRed[1] = extractFSEInfo(runT2, fsedata);
-				//System.out.println("time in red is " + runStatsRed[1].totalTimeInRed);
 			} catch (IOException ioe) {
 				System.err.println(ioe);
 				return;
@@ -110,14 +105,9 @@ public class Extractor {
 				pErr[j++] = i;
 			}
 		}		
-		
-		//System.out.println("Pioneer Error Times: " + pErrBegin[0] +" "+ pErrEnd[0] +" "+ pErrBegin[1] +" "+ pErrEnd[1]);
-		
+				
 		// Ignore first line of the log file
 		line = reader.readLine();
-		
-		//clicksWriter.write("Time \t\t Event \t\t Effect");
-		//clicksWriter.newLine();	
 		
 		// Read every line of the log file and tokenize it. Then extract the relevant values.			
 		while((line = reader.readLine()) != null) {
@@ -126,20 +116,15 @@ public class Extractor {
 				state = new SystemState(eachLine[0],eachLine[9],eachLine[10],eachLine[11], null, eachLine[13]);
 				systemTime = state.time;
 				
-				if (state.user.equals("OPERATOR")) {
-					//clicksWriter.write(""+ state.time + "\t"+ state.component + "\t\t" + state.effect);
-					//clicksWriter.newLine();					
-				}
-				
 				// Check if any repair is going on and if it's incorrect repair. Record incorrect repair order.
 				if (!wrongRep && (repBegin < 99999) && (repBegin + 60 < state.time)) {
 					wrongRep = true;
 					wrongRepair[wrongRepCount++] = repair;
 					repair = null;
 				}
+				
 				switch(state.component){
-					case "connection_check": //feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);
-											 if(state.effect.equals("icon_appears")){
+					case "connection_check": if(state.effect.equals("icon_appears")){
 												connectionCheckCount++;
 												iconApp = state.time;
 												iconClose = 0;
@@ -155,14 +140,12 @@ public class Extractor {
 														}
 													}else if (state.effect.equals("confirmed")) {
 															iconConf = state.time;
-															//feedbackWriter.write(";Time to respond: " + (iconConf-iconApp));
 															connCheckTime = connCheckTime + iconConf-iconApp;
 															iconApp = iconConf = 0;
 														}
 											 
 											 break;
-					case "logging_task": //feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);										 
-										 logCount++;
+					case "logging_task": logCount++;
 										 if (errorOnGoing) {
 												errorStatsList[errorCount-1].co2LogsOccurred++;
 											}
@@ -176,9 +159,8 @@ public class Extractor {
 					case "detector": errInf[errorCount -1] = new ErrorInfo(state.time, state.effect);
 									 errorStatsList[errorCount -1] = new ErrorStats(state.time, state.effect);									 
 									 break;
-					case "ni_tank_display":	//System.out.println("Nitrogen Tank Display Clicked");
+					case "ni_tank_display":	// Nitrogen Tank Display Clicked 
 											if (errorOnGoing) {
-												//System.out.println(errorStatsList[errorCount-1].n2TankClicks);
 												errorStatsList[errorCount-1].n2TankClicks++;
 											}
 											break;
@@ -201,7 +183,6 @@ public class Extractor {
 					case "graphic_monitor":	if (errorOnGoing) {
 												switch(state.effect) {
 												case "co_open": errorStatsList[errorCount-1].co2HistoryGraph++;
-																//System.out.println(errorStatsList[errorCount-1].co2HistoryGraph);
 																break;
 												case "ox_open": errorStatsList[errorCount-1].o2HistoryGraph++;
 																break;
@@ -223,8 +204,7 @@ public class Extractor {
 				}
 				
 				switch(state.effect.substring(0,6)) {
-					case "phase ": //feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);									
-									if (state.phase.equals("RED")) {
+					case "phase ": if (state.phase.equals("RED")) {
 										errBegin = state.time;
 										errorCount++;
 										errorOnGoing = true;
@@ -234,8 +214,7 @@ public class Extractor {
 												errInf[errorCount -1].repairAttempted = true;
 												errInf[errorCount -1].repCount++;
 												repBegin = state.time;
-												errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1] = repBegin - errBegin;
-												//feedbackWriter.write(";Time to respond: " + errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1]);												
+												errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1] = repBegin - errBegin;																								
 											} else if (state.phase.equals("RED_REPAIR") && wrongRep) {
 														repBegin = state.time;
 														errInf[errorCount -1].repCount++;
@@ -252,19 +231,12 @@ public class Extractor {
 									break;
 					case "repair":  if (state.effect.equals("repair task finished")) break;
 									else {										
-										//feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);										
-										//System.out.println(errInf[errorCount -1].repCount);
-										//System.out.println(state.effect.substring(7));									
 										errInf[errorCount -1].repairOrdered[errInf[errorCount -1].repCount -1] = state.effect.substring(8);
-										//System.out.println(errInf[errorCount -1].repairOrdered[errInf[errorCount -1].repCount]);
 										repair = state.effect.substring(8);
 										correctResponseTime = state.time - errInf[errorCount -1].timeOccurred;										
-										if (errInf[errorCount -1].errorOccurred.equals(repair)) {
-													//feedbackWriter.write(";Time for Correct Reponse: " + correctResponseTime);
+										if (errInf[errorCount -1].errorOccurred.equals(repair)) {										
 													errInf[errorCount -1].timeToCorrectResponse = correctResponseTime;
 										}
-										//System.out.println(repair + ":" + errInf[errorCount -1].errorOccurred);
-										
 										break;
 									}
 					default: break;
@@ -273,49 +245,40 @@ public class Extractor {
 			}
 		}
 		
-		//feedbackWriter.write("SUMMARY");
-		
-		
-		//feedbackWriter.write("Total number of Connection Checks missed: "+numMissed);
+		// Total number of Connection Checks missed
 		runStatsRed.connChecksMissed = numMissed;		
 		
 		if (connectionCheckCount != 0) {
-			//feedbackWriter.write("Connection Checks miss percentage: " + (double)((numMissed*100)/connectionCheckCount) + "%");
+			// Connection Checks miss percentage
 			runStatsRed.connChecksMissedPercentage = (double)((int)(((double)(numMissed*100)/connectionCheckCount)*100))/100;
 			
 		} else {
-			//feedbackWriter.write("Number of Connection Checks during simulation = 0");
+			// Number of Connection Checks during simulation = 0
 			
 		}
 		if (connectionCheckCount-numMissed == 0) {
-			//feedbackWriter.write("Missed all Connection Checks");
+			// Missed all Connection Checks
 			
 		} else {
-			//feedbackWriter.write("Average response time when responded: " + (double)(connCheckTime/(connectionCheckCount-numMissed)));
-			
+			// Average response time when responded: (double)(connCheckTime/(connectionCheckCount-numMissed)))			
 		}
 		
-		// System.out.println("Total number of Logging Tasks missed: "+logMissedCount);
+		// Total number of Logging Tasks missed
 		runStatsRed.co2LogsMissed = logMissedCount;
 		runStatsRed.delay = runT.delay;
 		
 		if (logCount != 0) {
-			//feedbackWriter.write("Logging Task miss percentage: " + (double)((logMissedCount*100)/logCount) + "%");
+			// Logging Task miss percentage
 			runStatsRed.co2LogsMissedPercentage = (double)((int)(((double)(logMissedCount*100)/logCount)*100))/100;
 		
 		} else {
-			//feedbackWriter.write("Number of Logging Tasks during simulation = 0");
+			// Number of Logging Tasks during simulation = 0
 			
 		}
 		
-		//System.out.println("Error \t"+"Occured At "+" Time to Respond "+" No. of Repairs Ordered "+" Time to Complete "+" Repair Ordered");
-		//System.out.println(errInf[0].errorOccurred + "; " + errInf[0].timeOccurred + "; " + errInf[0].timeToRespond + "; " + (errInf[0].repCount) + "; " + errInf[0].repComplete + "; " + errInf[0].repairOrdered[0] + "; " + errInf[0].repairOrdered[1] );
-		//feedbackWriter.write("ERROR OCCURRED;"+"AT;"+"CORRECT REPAIR AT;"+"NUM REPAIRS;"+"TIME TO COMPLETE");
-		
 		String repCompTime, timeCorrResp;
-		System.out.println("Error Count: " + errorCount);
+		
 		for (int i = 0; i < errorCount; i++) {
-			//errorStatsList[i] = new ErrorStats();
 			errorStatsList[i].connChecksMissedPercentage = (double)((int)(((double)(errorStatsList[i].connChecksMissed*100)/errorStatsList[i].connChecksOccurred)*100))/100;
 			errorStatsList[i].co2LogsMissedPercentage = (double)((int)(((double)(errorStatsList[i].co2LogsMissed*100)/errorStatsList[i].co2LogsOccurred)*100))/100;
 			if(errInf[i].repComplete == 99999) {
@@ -331,25 +294,18 @@ public class Extractor {
 				errorStatsList[i].incorrectRepairs = errInf[i].repCount - 1;
 				errorStatsList[i].correctRepair = 1;
 			}
-			//System.out.println(errInf[i].errorOccurred + ";" + errInf[i].timeOccurred + ";" + timeCorrResp + ";" + (errInf[i].repCount) + ";" + repCompTime);
-			//feedbackWriter.write("Error Occurred: "+errInf[i].errorOccurred + "; At: " + errInf[i].timeOccurred + "; Time for Correct Repair: " + timeCorrResp + "; Number of Repairs Attempted: " +  (errInf[i].repCount) + "; Repair Completed At: " + repCompTime);
 			
-			errorStatsList[i].Error = errInf[i].errorOccurred;
-				
-			
+			errorStatsList[i].Error = errInf[i].errorOccurred;			
 		}
 		int totalTimeInRed = 0;
 		
 		for (int i = 0; i < errorCount; i++) {
-			//System.out.println(errorStatsList[i].co2HistoryGraph +","+ errorStatsList[i].o2HistoryGraph +","+ errorStatsList[i].n2HistoryGraph +","+ errorStatsList[i].tempHistoryGraph +","+ errorStatsList[i].humidityHistoryGraph +","+ errorStatsList[i].flowRates +",");
-			//feedbackWriter.write("At "+errInf[i].timeToRespond[j] + " seconds; Attempted Repair: " + errInf[i].repairOrdered[j]);
 			feedbackWriter.write(runT.fileName + "," + errorStatsList[i].Error +"," + runT.leg + ","+ runT.delay + "," + runT.medium + ",");
 			feedbackWriter.write(errorStatsList[i].correctRepair +","+ errorStatsList[i].timeInRed +","+ errorStatsList[i].incorrectRepairs +",");
 			feedbackWriter.write(errorStatsList[i].o2TankClicks +","+ errorStatsList[i].o2FlowMeter +","+ errorStatsList[i].n2TankClicks +","+ errorStatsList[i].n2FlowMeter +","+ errorStatsList[i].mixerFlowMeter +",");
 			feedbackWriter.write(errorStatsList[i].co2HistoryGraph +","+ errorStatsList[i].o2HistoryGraph +","+ errorStatsList[i].n2HistoryGraph +","+ errorStatsList[i].tempHistoryGraph +","+ errorStatsList[i].humidityHistoryGraph +","+ errorStatsList[i].flowRates +",");
 			feedbackWriter.write(errorStatsList[i].co2LogsMissed + "," + errorStatsList[i].co2LogsMissedPercentage + "," + errorStatsList[i].connChecksMissed + "," +  errorStatsList[i].connChecksMissedPercentage + ",");
 			totalTimeInRed = totalTimeInRed + errorStatsList[i].timeInRed;
-			//System.out.println(totalTimeInRed);
 		}
 		if (errorCount < 6) {
 			for (int i = (6 - errorCount); i > 0; i--) {
@@ -360,7 +316,6 @@ public class Extractor {
 	
 		reader.close();
 		feedbackWriter.close();
-		//clicksWriter.close();
 		return runStatsRed;
 	}
 
@@ -368,7 +323,6 @@ public class Extractor {
 		System.out.println(runT.fileName);
 		// Read the inFile line by line and print everything to console and outFile.
 				BufferedReader reader = new BufferedReader(new FileReader(runT.fileLoc));
-				//BufferedWriter feedbackWriter = new BufferedWriter(new FileWriter(pdata, true));
 				RunStatsInRed runStatsRed = new RunStatsInRed();
 				ErrorStats[] errorStatsList = new ErrorStats[15];
 				
@@ -394,20 +348,12 @@ public class Extractor {
 				// Ignore first line of the log file
 				line = reader.readLine();
 				
-				//clicksWriter.write("Time \t\t Event \t\t Effect");
-				//clicksWriter.newLine();	
-				
 				// Read every line of the log file and tokenize it. Then extract the relevant values.			
 				while((line = reader.readLine()) != null) {
 					eachLine = line.split(";");
 					if (eachLine.length == 14 ) {
 						state = new SystemState(eachLine[0],eachLine[9],eachLine[10],eachLine[11], null, eachLine[13]);
 						systemTime = state.time;
-						
-						if (state.user.equals("OPERATOR")) {
-							//clicksWriter.write(""+ state.time + "\t"+ state.component + "\t\t" + state.effect);
-							//clicksWriter.newLine();					
-						}
 						
 						// Check if any repair is going on and if it's incorrect repair. Record incorrect repair order.
 						if (!wrongRep && (repBegin < 99999) && (repBegin + 60 < state.time)) {
@@ -416,8 +362,7 @@ public class Extractor {
 							repair = null;
 						}
 						switch(state.component){
-							case "connection_check": //feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);													 
-													 if(state.effect.equals("icon_appears")){
+							case "connection_check": if(state.effect.equals("icon_appears")){
 														connectionCheckCount++;
 														iconApp = state.time;
 														iconClose = 0;
@@ -433,14 +378,12 @@ public class Extractor {
 																}
 															}else if (state.effect.equals("confirmed")) {
 																	iconConf = state.time;
-																	//feedbackWriter.write(";Time to respond: " + (iconConf-iconApp));
 																	connCheckTime = connCheckTime + iconConf-iconApp;
 																	iconApp = iconConf = 0;
 																}
 													 
 													 break;
-							case "logging_task": //feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);										 
-												 logCount++;
+							case "logging_task": logCount++;
 												 if (errorOnGoing) {
 														errorStatsList[errorCount-1].co2LogsOccurred++;
 													}
@@ -454,9 +397,8 @@ public class Extractor {
 							case "detector": errInf[errorCount -1] = new ErrorInfo(state.time, state.effect);
 											 errorStatsList[errorCount -1] = new ErrorStats(state.time, state.effect);									 
 											 break;
-							case "ni_tank_display":	//System.out.println("Nitrogen Tank Display Clicked");
+							case "ni_tank_display":	// Nitrogen Tank Display Clicked
 													if (errorOnGoing) {
-														//System.out.println(errorStatsList[errorCount-1].n2TankClicks);
 														errorStatsList[errorCount-1].n2TankClicks++;
 													}
 													break;
@@ -479,7 +421,6 @@ public class Extractor {
 							case "graphic_monitor":	if (errorOnGoing) {
 														switch(state.effect) {
 														case "co_open": errorStatsList[errorCount-1].co2HistoryGraph++;
-																		//System.out.println(errorStatsList[errorCount-1].co2HistoryGraph);
 																		break;
 														case "ox_open": errorStatsList[errorCount-1].o2HistoryGraph++;
 																		break;
@@ -501,8 +442,7 @@ public class Extractor {
 						}
 						
 						switch(state.effect.substring(0,6)) {
-							case "phase ": //feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);									
-											if (state.phase.equals("RED")) {
+							case "phase ":  if (state.phase.equals("RED")) {
 												errBegin = state.time;
 												errorCount++;
 												errorOnGoing = true;
@@ -513,14 +453,9 @@ public class Extractor {
 														errInf[errorCount -1].repCount++;
 														repBegin = state.time;
 														errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1] = repBegin - errBegin;
-														//feedbackWriter.write(";Time to respond: " + errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1]);												
 													} else if (state.phase.equals("RED_REPAIR") && wrongRep) {
 																repBegin = state.time;
 																errInf[errorCount -1].repCount++;
-																//System.out.println(errorCount);
-																//System.out.println(errInf[errorCount -1].repCount);
-																//System.out.println(errInf[errorCount -1].repCount -1);
-																//System.out.println(errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1]);
 																errInf[errorCount -1].timeToRespond[errInf[errorCount -1].repCount -1] = repBegin - errBegin;
 																wrongRep = false;
 															} else if (state.phase.equals("RED_NO_ERROR")) {
@@ -534,19 +469,12 @@ public class Extractor {
 											break;
 							case "repair":  if (state.effect.equals("repair task finished")) break;
 											else {										
-												//feedbackWriter.write(state.time+";"+state.component+";"+state.effect+";"+state.phase);										
-												//System.out.println(errInf[errorCount -1].repCount);
-												//System.out.println(state.effect.substring(7));									
 												errInf[errorCount -1].repairOrdered[errInf[errorCount -1].repCount -1] = state.effect.substring(8);
-												//System.out.println(errInf[errorCount -1].repairOrdered[errInf[errorCount -1].repCount]);
 												repair = state.effect.substring(8);
 												correctResponseTime = state.time - errInf[errorCount -1].timeOccurred;										
 												if (errInf[errorCount -1].errorOccurred.equals(repair)) {
-															//feedbackWriter.write(";Time for Correct Reponse: " + correctResponseTime);
 															errInf[errorCount -1].timeToCorrectResponse = correctResponseTime;
 												}
-												//System.out.println(repair + ":" + errInf[errorCount -1].errorOccurred);
-												
 												break;
 											}
 							default: break;
@@ -555,44 +483,36 @@ public class Extractor {
 					}
 				}
 				
-				//feedbackWriter.write("SUMMARY");
-				
-				
-				//feedbackWriter.write("Total number of Connection Checks missed: "+numMissed);
+				// Total number of Connection Checks missed				
 				runStatsRed.connChecksMissed = numMissed;		
 				
 				if (connectionCheckCount != 0) {
-					//feedbackWriter.write("Connection Checks miss percentage: " + (double)((numMissed*100)/connectionCheckCount) + "%");
+					// Connection Checks miss percentage
 					runStatsRed.connChecksMissedPercentage = (double)((int)(((double)(numMissed*100)/connectionCheckCount)*100))/100;
 					
 				} else {
-					//feedbackWriter.write("Number of Connection Checks during simulation = 0");
+					// Number of Connection Checks during simulation = 0
 					
 				}
 				if (connectionCheckCount-numMissed == 0) {
-					//feedbackWriter.write("Missed all Connection Checks");
+					// Missed all Connection Checks
 					
 				} else {
-					//feedbackWriter.write("Average response time when responded: " + (double)(connCheckTime/(connectionCheckCount-numMissed)));
+					// Average response time when responded: " + (double)(connCheckTime/(connectionCheckCount-numMissed)))
 					
 				}
-				
-				
+								
 				runStatsRed.co2LogsMissed = logMissedCount;
 				runStatsRed.delay = runT.delay;
 				
 				if (logCount != 0) {
-					//feedbackWriter.write("Logging Task miss percentage: " + (double)((logMissedCount*100)/logCount) + "%");
+					// Logging Task miss percentage
 					runStatsRed.co2LogsMissedPercentage = (double)((int)(((double)(logMissedCount*100)/logCount)*100))/100;
 				
 				} else {
-					//feedbackWriter.write("Number of Logging Tasks during simulation = 0");
+					// Number of Logging Tasks during simulation = 0
 					
 				}
-				
-				//System.out.println("Error \t"+"Occured At "+" Time to Respond "+" No. of Repairs Ordered "+" Time to Complete "+" Repair Ordered");
-				//System.out.println(errInf[0].errorOccurred + "; " + errInf[0].timeOccurred + "; " + errInf[0].timeToRespond + "; " + (errInf[0].repCount) + "; " + errInf[0].repComplete + "; " + errInf[0].repairOrdered[0] + "; " + errInf[0].repairOrdered[1] );
-				//feedbackWriter.write("ERROR OCCURRED;"+"AT;"+"CORRECT REPAIR AT;"+"NUM REPAIRS;"+"TIME TO COMPLETE");
 				
 				String repCompTime, timeCorrResp;
 				
@@ -603,14 +523,11 @@ public class Extractor {
 					errorStatsList[i].delay = runT.delay;
 					errorStatsList[i].connChecksMissedPercentage = (double)((int)(((double)(errorStatsList[i].connChecksMissed*100)/errorStatsList[i].connChecksOccurred)*100))/100;
 					errorStatsList[i].co2LogsMissedPercentage = (double)((int)(((double)(errorStatsList[i].co2LogsMissed*100)/errorStatsList[i].co2LogsOccurred)*100))/100;
-					// System.out.println("Error Stats: Conn Check Miss %: " + errorStatsList[i].connChecksMissedPercentage + "; CO2 Log Miss %: " + errorStatsList[i].co2LogsMissedPercentage);
-					//errorStatsList[i] = new ErrorStats();
 					if(errInf[i].repComplete == 99999) {
 						repCompTime = "Repair Failed";
 						timeCorrResp = "Never";
 						errorStatsList[i].correctRepair = 0;
 						errorStatsList[i].timeInRed = systemTime - errInf[i].timeOccurred;
-						//System.out.println("Time in Red when error is not repaired: " + errorStatsList[i].timeInRed + "; Time to Corrrect Response: " + systemTime +"; Time Occurred: " + errInf[i].timeOccurred);
 						errorStatsList[i].incorrectRepairs = errInf[i].repCount;
 					} else {
 						repCompTime = Integer.toString(errInf[i].repComplete);
@@ -619,56 +536,31 @@ public class Extractor {
 						errorStatsList[i].incorrectRepairs = errInf[i].repCount - 1;
 						errorStatsList[i].correctRepair = 1;
 					}
-					//System.out.println(errInf[i].errorOccurred + ";" + errInf[i].timeOccurred + ";" + timeCorrResp + ";" + (errInf[i].repCount) + ";" + repCompTime);
-					//feedbackWriter.write("Error Occurred: "+errInf[i].errorOccurred + "; At: " + errInf[i].timeOccurred + "; Time for Correct Repair: " + timeCorrResp + "; Number of Repairs Attempted: " +  (errInf[i].repCount) + "; Repair Completed At: " + repCompTime);
 					
-					errorStatsList[i].Error = errInf[i].errorOccurred;
-					
-					//System.out.println("Error Count in P = " + errInf[i].repCount);
-						
-						
-					
+					errorStatsList[i].Error = errInf[i].errorOccurred;					
 				}
 				int totalTimeInRed = 0;
-				//System.out.println("Error Count: " + errorCount);
 				for (int i = 0; i < errorCount; i++) {					
-					//System.out.println(errorStatsList[i].co2HistoryGraph +","+ errorStatsList[i].o2HistoryGraph +","+ errorStatsList[i].n2HistoryGraph +","+ errorStatsList[i].tempHistoryGraph +","+ errorStatsList[i].humidityHistoryGraph +","+ errorStatsList[i].flowRates +",");
-					//feedbackWriter.write("At "+errInf[i].timeToRespond[j] + " seconds; Attempted Repair: " + errInf[i].repairOrdered[j]);
 					switch(errorStatsList[i].Error) {
 						case "NITROGEN_VALVE_LEAK" : FSE_PioneerErrors.pioneerErrors[0] = new ErrorStats();
 													 FSE_PioneerErrors.pioneerErrors[0] = errorStatsList[i];
-													 // System.out.println("PioneerErrors: Conn Check Miss %: " + FSE_PioneerErrors.pioneerErrors[0].connChecksMissedPercentage + "; CO2 Log Miss %: " + FSE_PioneerErrors.pioneerErrors[0].co2LogsMissedPercentage);
 													 break;
 						case "OXYGEN_VALVE_STUCK_OPEN" : FSE_PioneerErrors.pioneerErrors[1] = new ErrorStats();
 														 FSE_PioneerErrors.pioneerErrors[1] = errorStatsList[i];
-														 // System.out.println("PioneerErrors: Conn Check Miss %: " + FSE_PioneerErrors.pioneerErrors[1].connChecksMissedPercentage + "; CO2 Log Miss %: " + FSE_PioneerErrors.pioneerErrors[1].co2LogsMissedPercentage);
-						 								 break;
+														 break;
 						case "MIXER_BLOCK" : FSE_PioneerErrors.pioneerErrors[2] = new ErrorStats();
 											 FSE_PioneerErrors.pioneerErrors[2] = errorStatsList[i];
-											 // System.out.println("PioneerErrors: Conn Check Miss %: " + FSE_PioneerErrors.pioneerErrors[2].connChecksMissedPercentage + "; CO2 Log Miss %: " + FSE_PioneerErrors.pioneerErrors[2].co2LogsMissedPercentage);
-						 					 break;
+											 break;
 						case "OXYGEN_SENSOR_STARTS_LOWER_TH" : FSE_PioneerErrors.pioneerErrors[3] = new ErrorStats();
 															   FSE_PioneerErrors.pioneerErrors[3] = errorStatsList[i];
-															   // System.out.println("PioneerErrors: Conn Check Miss %: " + FSE_PioneerErrors.pioneerErrors[3].connChecksMissedPercentage + "; CO2 Log Miss %: " + FSE_PioneerErrors.pioneerErrors[3].co2LogsMissedPercentage);
-						 									   break;
+															   break;
 						default: break;
 					}
-					/*
-					feedbackWriter.write(runT.fileName + "," + errorStatsList[i].Error +"," + runT.leg + ","+ runT.delay + "," + runT.medium + ",");
-					feedbackWriter.write(errorStatsList[i].correctRepair +","+ errorStatsList[i].timeInRed +","+ errorStatsList[i].incorrectRepairs +",");
-					feedbackWriter.write(errorStatsList[i].o2TankClicks +","+ errorStatsList[i].o2FlowMeter +","+ errorStatsList[i].n2TankClicks +","+ errorStatsList[i].n2FlowMeter +","+ errorStatsList[i].mixerFlowMeter +",");
-					feedbackWriter.write(errorStatsList[i].co2HistoryGraph +","+ errorStatsList[i].o2HistoryGraph +","+ errorStatsList[i].n2HistoryGraph +","+ errorStatsList[i].tempHistoryGraph +","+ errorStatsList[i].humidityHistoryGraph +","+ errorStatsList[i].flowRates +",");
-					feedbackWriter.write(errorStatsList[i].co2LogsMissed + "," + errorStatsList[i].co2LogsMissedPercentage + "," + errorStatsList[i].connChecksMissed + "," +  errorStatsList[i].connChecksMissedPercentage + ",");
-					*/
 					totalTimeInRed = totalTimeInRed + errorStatsList[i].timeInRed;
-					
-					//System.out.println(totalTimeInRed);
 				}
 				
 			    runStatsRed.totalTimeInRed = totalTimeInRed;
-			   // System.out.println("Total time in Red = " + runStatsRed.totalTimeInRed);
-				
-				
+								
 				for (int j = 0; j < errorCount; j++) {
 					switch (errorStatsList[j].Error) {
 						case "NITROGEN_VALVE_LEAK": 
@@ -707,9 +599,7 @@ public class Extractor {
 					}							
 					
 				}
-				reader.close();
-				//feedbackWriter.close();
-				//clicksWriter.close();				
+				reader.close();				
 				return runStatsRed;
 		}
 
