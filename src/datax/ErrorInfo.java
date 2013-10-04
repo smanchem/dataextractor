@@ -11,10 +11,10 @@ public class ErrorInfo {
 		errorOccurred = null;
 		timeOccurred = 0;
 		timeToRespond = null;
-		timeToCorrectResponse = 9999;
+		timeToCorrectResponse = 99999;
 		repCount = 0;
 		repairOrdered = null;
-		repComplete = 9999;
+		repComplete = 99999;
 		repairAttempted = false;
 	}
 	
@@ -22,10 +22,10 @@ public class ErrorInfo {
 		errorOccurred = error;
 		timeOccurred = time;
 		timeToRespond = new int[30];
-		timeToCorrectResponse = 9999;
+		timeToCorrectResponse = 99999;
 		repCount = 0;
 		repairOrdered = new String[30];
-		repComplete = 9999;
+		repComplete = 99999;
 		repairAttempted = false;
 	}
 }

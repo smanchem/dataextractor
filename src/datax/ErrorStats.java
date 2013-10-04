@@ -46,10 +46,10 @@ public class ErrorStats {
 		flowRates = 0;
 		co2LogsMissed = 0;
 		co2LogsOccurred = 0;
-		co2LogsMissedPercentage = 0;
+		co2LogsMissedPercentage = 0.0;
 		connChecksMissed = 0;
 		connChecksOccurred = 0;
-		connChecksMissedPercentage = 0;
+		connChecksMissedPercentage = 0.0;
 	}
 	
 	public ErrorStats() {
@@ -72,10 +72,10 @@ public class ErrorStats {
 		flowRates = 0;
 		co2LogsMissed = 0;
 		co2LogsOccurred = 0;
-		co2LogsMissedPercentage = 0;
+		co2LogsMissedPercentage = 0.0;
 		connChecksMissed = 0;
 		connChecksOccurred = 0;
-		connChecksMissedPercentage = 0;
+		connChecksMissedPercentage = 0.0;
 	}
 }
 

@@ -11,7 +11,7 @@ public class FSE_PioneerErrors {
 	double CO2LogsMissedPercentage;
 	double connChecksMissedPercentage;
 	
-	public static ErrorStats[] pioneerErrors = new ErrorStats[4]; 
+	public static ErrorStats[] pioneerErrors = new ErrorStats[4];	
 	
 	public FSE_PioneerErrors() {
 		
