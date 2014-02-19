@@ -43,9 +43,7 @@ public class Extractor {
 					feedbackWriter2.write(",,,,,,,,,,,,,,,,,,,,,,,");
 				}
 			}			
-			
-			// if (fsePioneerError[0] != null) System.out.println("Pioneer Errors = " + fsePioneerError[0].timeBegin);
-			
+						
 			try {
 				runStatsRed[0] = extractFSEInfo(runT1, fsedata);
 			} catch (IOException ioe) {
@@ -61,11 +59,32 @@ public class Extractor {
 			
 			
 			BufferedWriter feedbackWriter = new BufferedWriter(new FileWriter(fsedata, true));
-			for (int i = 0; i<2; i++)
-				feedbackWriter.write(runStatsRed[i].totalTimeInRed +","+ runStatsRed[1].co2LogsMissed +","+ runStatsRed[i].co2LogsMissedPercentage +","+ runStatsRed[i].connChecksMissed +","+ runStatsRed[i].connChecksMissedPercentage + ",");
 			
-			for (int i = 2; i<4; i++)
-				feedbackWriter2.write(runStatsRed[i].totalTimeInRed +","+ runStatsRed[1].co2LogsMissed +","+ runStatsRed[i].co2LogsMissedPercentage +","+ runStatsRed[i].connChecksMissed +","+ runStatsRed[i].connChecksMissedPercentage + ",");
+			if (runStatsRed[0].delay == 1) {
+				feedbackWriter.write(runStatsRed[0].totalTimeInRed +","+ runStatsRed[0].co2LogsMissed +","+ runStatsRed[0].co2LogsMissedPercentage +","+ runStatsRed[0].connChecksMissed +","+ runStatsRed[0].connChecksMissedPercentage + ",");
+				feedbackWriter.write(runStatsRed[1].totalTimeInRed +","+ runStatsRed[1].co2LogsMissed +","+ runStatsRed[1].co2LogsMissedPercentage +","+ runStatsRed[1].connChecksMissed +","+ runStatsRed[1].connChecksMissedPercentage + ",");
+			} else {
+				feedbackWriter.write(runStatsRed[1].totalTimeInRed +","+ runStatsRed[1].co2LogsMissed +","+ runStatsRed[1].co2LogsMissedPercentage +","+ runStatsRed[1].connChecksMissed +","+ runStatsRed[1].connChecksMissedPercentage + ",");
+				feedbackWriter.write(runStatsRed[0].totalTimeInRed +","+ runStatsRed[0].co2LogsMissed +","+ runStatsRed[0].co2LogsMissedPercentage +","+ runStatsRed[0].connChecksMissed +","+ runStatsRed[0].connChecksMissedPercentage + ",");
+			}
+			
+			for (int i = 0; i < 4; i++) {
+				if (fsePioneerError[i] != null) {
+					feedbackWriter.write(fsePioneerError[i].timeInRed + "," + fsePioneerError[i].CO2LogsMissed + "," + fsePioneerError[i].CO2LogsMissedPercentage + "," + fsePioneerError[i].connChecksMissed + "," + fsePioneerError[i].connChecksMissedPercentage + ",");
+					// System.out.print(fsePioneerError[i].timeInRed + "," + fsePioneerError[i].CO2LogsMissed + "," + fsePioneerError[i].CO2LogsMissedPercentage + "," + fsePioneerError[i].connChecksMissed + "," + fsePioneerError[i].connChecksMissedPercentage + ",");
+				} else {
+					feedbackWriter.write(",,,,,");
+					// System.out.print(",,,,,");
+				}
+			}
+
+			if (runStatsRed[2].delay == 1) {
+				feedbackWriter2.write(runStatsRed[2].totalTimeInRed +","+ runStatsRed[2].co2LogsMissed +","+ runStatsRed[2].co2LogsMissedPercentage +","+ runStatsRed[2].connChecksMissed +","+ runStatsRed[2].connChecksMissedPercentage + ",");
+				feedbackWriter2.write(runStatsRed[3].totalTimeInRed +","+ runStatsRed[3].co2LogsMissed +","+ runStatsRed[3].co2LogsMissedPercentage +","+ runStatsRed[3].connChecksMissed +","+ runStatsRed[3].connChecksMissedPercentage + ",");
+			} else {
+				feedbackWriter2.write(runStatsRed[3].totalTimeInRed +","+ runStatsRed[3].co2LogsMissed +","+ runStatsRed[3].co2LogsMissedPercentage +","+ runStatsRed[3].connChecksMissed +","+ runStatsRed[3].connChecksMissedPercentage + ",");
+				feedbackWriter2.write(runStatsRed[2].totalTimeInRed +","+ runStatsRed[2].co2LogsMissed +","+ runStatsRed[2].co2LogsMissedPercentage +","+ runStatsRed[2].connChecksMissed +","+ runStatsRed[2].connChecksMissedPercentage + ",");
+			}
 			feedbackWriter.close();
 			feedbackWriter2.close();
 	}		
@@ -100,11 +119,17 @@ public class Extractor {
 		
 		int[] pErr = {9,9};
 		int j = 0;
+		boolean pErr1 = false, pErr2 = false;
+		boolean pErr1Ongoing = false, pErr2Ongoing = false;
 		for (int i = 0; i < 4; i++) {
 			if (fsePioneerError[i] != null && fsePioneerError[i].leg == runT.leg) {
 				pErr[j++] = i;
+				pErr1 = true;
 			}
-		}		
+		}
+		if (j == 2) {
+			pErr2 = true;
+		}
 				
 		// Ignore first line of the log file
 		line = reader.readLine();
@@ -115,6 +140,32 @@ public class Extractor {
 			if (eachLine.length == 14 ) {
 				state = new SystemState(eachLine[0],eachLine[9],eachLine[10],eachLine[11], null, eachLine[13]);
 				systemTime = state.time;
+				if (pErr1 && (fsePioneerError[pErr[0]].timeBegin <= systemTime)) {
+					if (fsePioneerError[pErr[0]].timeEnd >= systemTime) {
+						pErr1Ongoing = true;
+						if (state.phase.substring(0, 3).equals("RED")) {
+							if (fsePioneerError[pErr[0]].prevTime < systemTime) {
+								fsePioneerError[pErr[0]].timeInRed++;
+								fsePioneerError[pErr[0]].prevTime = systemTime;
+							}
+						}						
+					} else {
+						pErr1Ongoing = false;			 
+					}
+				}
+				if (pErr2 && (fsePioneerError[pErr[1]].timeBegin <= systemTime)) {
+					if (fsePioneerError[pErr[1]].timeEnd >= systemTime) {
+						pErr2Ongoing = true;
+						if (state.phase.substring(0, 3).equals("RED")) {
+							if (fsePioneerError[pErr[1]].prevTime < systemTime) {
+								fsePioneerError[pErr[1]].timeInRed++;
+								fsePioneerError[pErr[1]].prevTime = systemTime;
+							}
+						}
+					} else {
+						pErr2Ongoing = false;						 
+					}
+				}
 				
 				// Check if any repair is going on and if it's incorrect repair. Record incorrect repair order.
 				if (!wrongRep && (repBegin < 99999) && (repBegin + 60 < state.time)) {
@@ -131,12 +182,23 @@ public class Extractor {
 												if (errorOnGoing) {
 													errorStatsList[errorCount-1].connChecksOccurred++;
 												}
+												if (pErr1Ongoing) {
+													fsePioneerError[pErr[0]].connChecksOccurred++;
+												}
+												if (pErr2Ongoing) {
+													fsePioneerError[pErr[1]].connChecksOccurred++;
+												}
 											 } else if (state.effect.equals("icon_closed")) {
 														iconClose = state.time;
 														numMissed++;
 														iconApp = 0;
 														if (errorOnGoing) {
 															errorStatsList[errorCount-1].connChecksMissed++;
+														}
+														if (pErr1Ongoing) {
+															fsePioneerError[pErr[0]].connChecksMissed++;
+														} else if (pErr2Ongoing) {
+															fsePioneerError[pErr[1]].connChecksMissed++;
 														}
 													}else if (state.effect.equals("confirmed")) {
 															iconConf = state.time;
@@ -148,12 +210,24 @@ public class Extractor {
 					case "logging_task": logCount++;
 										 if (errorOnGoing) {
 												errorStatsList[errorCount-1].co2LogsOccurred++;
-											}
+										 }
+										 if (pErr1Ongoing) {
+											 fsePioneerError[pErr[0]].CO2LogsOccurred++;
+										 }
+										 if (pErr2Ongoing) {
+											 fsePioneerError[pErr[1]].CO2LogsOccurred++;
+										 } 
 										 if (state.effect.equals("missed")) {
 											logMissedCount++;
 											if (errorOnGoing) {
 												errorStatsList[errorCount-1].co2LogsMissed++;
 											}
+											if (pErr1Ongoing) {
+												 fsePioneerError[pErr[0]].CO2LogsMissed++;
+											 }
+											if (pErr2Ongoing) {
+												 fsePioneerError[pErr[1]].CO2LogsMissed++;
+											 }
 										 }
 										 continue;
 					case "detector": errInf[errorCount -1] = new ErrorInfo(state.time, state.effect);
@@ -205,6 +279,14 @@ public class Extractor {
 				
 				switch(state.effect.substring(0,6)) {
 					case "phase ": if (state.phase.equals("RED")) {
+										if (pErr1Ongoing) {
+											 fsePioneerError[pErr[0]].prevTime = systemTime;
+											 //System.out.println("FSE " + fsePioneerError[pErr[0]].pioneerErrorType +" Error Begin: " + fsePioneerError[pErr[0]].prevTime);
+										}
+										if (pErr2Ongoing) {
+											 fsePioneerError[pErr[1]].prevTime = systemTime;
+											 //System.out.println("FSE " + fsePioneerError[pErr[1]].pioneerErrorType + " Error Begin: " + fsePioneerError[pErr[1]].prevTime);
+										}
 										errBegin = state.time;
 										errorCount++;
 										errorOnGoing = true;
@@ -245,8 +327,24 @@ public class Extractor {
 			}
 		}
 		
+		// CO2 Logs and Connection Checks while Pioneer is in Error
+		if (pErr1) {
+			fsePioneerError[pErr[0]].connChecksMissedPercentage = (double)((int)(((double)(fsePioneerError[pErr[0]].connChecksMissed*100)/fsePioneerError[pErr[0]].connChecksOccurred)*100))/100;
+			fsePioneerError[pErr[0]].CO2LogsMissedPercentage = (double)((int)(((double)(fsePioneerError[pErr[0]].CO2LogsMissed*100)/fsePioneerError[pErr[0]].CO2LogsOccurred)*100))/100;
+			// System.out.println ("pErr1 ConnCheck %: " + fsePioneerError[pErr[0]].connChecksMissedPercentage + "; CO2 Log %: " + fsePioneerError[pErr[0]].CO2LogsMissedPercentage);
+			//System.out.println("Total time in Red in pErr1: " + fsePioneerError[pErr[0]].timeInRed);
+			//System.out.println("FSE "+ fsePioneerError[pErr[0]].pioneerErrorType + " Error End: " + fsePioneerError[pErr[0]].prevTime);
+		}
+		if (pErr2) {
+			fsePioneerError[pErr[1]].connChecksMissedPercentage = (double)((int)(((double)(fsePioneerError[pErr[1]].connChecksMissed*100)/fsePioneerError[pErr[1]].connChecksOccurred)*100))/100;
+			fsePioneerError[pErr[1]].CO2LogsMissedPercentage = (double)((int)(((double)(fsePioneerError[pErr[1]].CO2LogsMissed*100)/fsePioneerError[pErr[1]].connChecksOccurred)*100))/100;
+			// System.out.println ("pErr2 ConnCheck %: " + fsePioneerError[pErr[1]].connChecksMissedPercentage + "; CO2 Log %: " + fsePioneerError[pErr[1]].CO2LogsMissedPercentage);
+			//System.out.println("Total time in Red in pErr2: " + fsePioneerError[pErr[1]].timeInRed);
+			//System.out.println("FSE "+ fsePioneerError[pErr[1]].pioneerErrorType + " Error End: " + fsePioneerError[pErr[1]].prevTime);
+		}
+		
 		// Total number of Connection Checks missed
-		runStatsRed.connChecksMissed = numMissed;		
+		runStatsRed.connChecksMissed = numMissed;
 		
 		if (connectionCheckCount != 0) {
 			// Connection Checks miss percentage
@@ -313,7 +411,7 @@ public class Extractor {
 			}
 		}
 	    runStatsRed.totalTimeInRed = totalTimeInRed;	    
-	
+	    
 		reader.close();
 		feedbackWriter.close();
 		return runStatsRed;
@@ -570,6 +668,7 @@ public class Extractor {
 							fsePioneerError[0].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[0].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[0].leg = runT.leg;
+							//System.out.println("S1 Begin: " + fsePioneerError[0].timeBegin + "; End: " + fsePioneerError[0].timeEnd);
 							break;
 						case "OXYGEN_VALVE_STUCK_OPEN" :
 							fsePioneerError[1] = new FSE_PioneerErrors();
@@ -578,6 +677,7 @@ public class Extractor {
 							fsePioneerError[1].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[1].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[1].leg = runT.leg;
+							//System.out.println("S2 Begin: " + fsePioneerError[1].timeBegin + "; End: " + fsePioneerError[1].timeEnd);
 							break;
 						case "MIXER_BLOCK": 
 							fsePioneerError[2] = new FSE_PioneerErrors();
@@ -586,6 +686,7 @@ public class Extractor {
 							fsePioneerError[2].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[2].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[2].leg = runT.leg;
+							//System.out.println("D1 Begin: " + fsePioneerError[2].timeBegin + "; End: " + fsePioneerError[2].timeEnd);
 							break;
 						case "OXYGEN_SENSOR_STARTS_LOWER_TH" :
 							fsePioneerError[3] = new FSE_PioneerErrors();
@@ -594,6 +695,7 @@ public class Extractor {
 							fsePioneerError[3].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[3].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[3].leg = runT.leg;
+							//System.out.println("D2 Begin: " + fsePioneerError[3].timeBegin + "; End: " + fsePioneerError[3].timeEnd);
 							break;
 						default: break;
 					}							
