@@ -4,7 +4,7 @@ import java.io.*;
 
 public class Extractor {
 	public static FSE_PioneerErrors[] fsePioneerError = new FSE_PioneerErrors[4];
-	public static void extract(Run run, File fsedata, File pdata) throws IOException {
+	public static void extract(Run run, File fsedata, File pdata, File fsePioneerDelay) throws IOException {
 		RunType runT1 = new RunType(run.fse1, 1);
 		RunType runT2 = new RunType(run.fse2, 2);
 		RunType runT3 = new RunType(run.p1, 1);
@@ -77,6 +77,51 @@ public class Extractor {
 					// System.out.print(",,,,,");
 				}
 			}
+			
+			/*
+			 * When Pioneer is in Red during Time Delay and No Time Delay phases, FSE activity.
+			 * */
+			FSE_PioneerErrors[] fseErrors = new FSE_PioneerErrors[2];
+			fseErrors[0] = new FSE_PioneerErrors();
+			fseErrors[1] = new FSE_PioneerErrors();
+			for (int i = 0; i < 4; i++) {
+				if (fsePioneerError[i] != null && fsePioneerError[i].delay == 0) {
+					fseErrors[0].delay = 0;
+					fseErrors[0].timeInRed = fseErrors[0].timeInRed + fsePioneerError[i].timeInRed;
+					fseErrors[0].CO2LogsMissed = fseErrors[0].CO2LogsMissed + fsePioneerError[i].CO2LogsMissed;
+					fseErrors[0].CO2LogsOccurred = fseErrors[0].CO2LogsOccurred + fsePioneerError[i].CO2LogsOccurred;
+					fseErrors[0].connChecksMissed = fseErrors[0].connChecksMissed + fsePioneerError[i].connChecksMissed;
+					fseErrors[0].connChecksOccurred = fseErrors[0].connChecksOccurred + fsePioneerError[i].connChecksOccurred;
+					//feedbackWriter.write(fsePioneerError[i].timeInRed + "," + fsePioneerError[i].CO2LogsMissed + "," + fsePioneerError[i].CO2LogsMissedPercentage + "," + fsePioneerError[i].connChecksMissed + "," + fsePioneerError[i].connChecksMissedPercentage + ",");
+					// System.out.print(fsePioneerError[i].timeInRed + "," + fsePioneerError[i].CO2LogsMissed + "," + fsePioneerError[i].CO2LogsMissedPercentage + "," + fsePioneerError[i].connChecksMissed + "," + fsePioneerError[i].connChecksMissedPercentage + ",");
+				} else if (fsePioneerError[i] != null && fsePioneerError[i].delay == 1){
+					fseErrors[1].delay = 1;
+					fseErrors[1].timeInRed = fseErrors[1].timeInRed + fsePioneerError[i].timeInRed;
+					fseErrors[1].CO2LogsMissed = fseErrors[1].CO2LogsMissed + fsePioneerError[i].CO2LogsMissed;
+					fseErrors[1].CO2LogsOccurred = fseErrors[1].CO2LogsOccurred + fsePioneerError[i].CO2LogsOccurred;
+					fseErrors[1].connChecksMissed = fseErrors[1].connChecksMissed + fsePioneerError[i].connChecksMissed;
+					fseErrors[1].connChecksOccurred = fseErrors[1].connChecksOccurred + fsePioneerError[i].connChecksOccurred;
+				} else {
+					//feedbackWriter.write(",,,,,");
+					// System.out.print(",,,,,");
+				}
+			}
+			
+			fseErrors[0].CO2LogsMissedPercentage = (double)((int)(((double)(fseErrors[0].CO2LogsMissed*100)/fseErrors[0].connChecksOccurred)*100))/100;
+			fseErrors[0].connChecksMissedPercentage = (double)((int)(((double)(fseErrors[0].connChecksMissed*100)/fseErrors[0].connChecksOccurred)*100))/100;
+			fseErrors[1].CO2LogsMissedPercentage = (double)((int)(((double)(fseErrors[1].CO2LogsMissed*100)/fseErrors[1].connChecksOccurred)*100))/100;		
+			fseErrors[1].connChecksMissedPercentage = (double)((int)(((double)(fseErrors[1].connChecksMissed*100)/fseErrors[1].connChecksOccurred)*100))/100;
+			BufferedWriter feedbackWriter3 = new BufferedWriter(new FileWriter(fsePioneerDelay, true));
+			if (fseErrors[0].leg == runT1.delay) {
+				feedbackWriter3.write(runT1.fileName + "," + fseErrors[0].timeInRed + "," + fseErrors[0].CO2LogsMissed + "," + fseErrors[0].CO2LogsMissedPercentage + "," + fseErrors[0].connChecksMissed + "," + fseErrors[0].connChecksMissedPercentage + ",");
+				feedbackWriter3.write(runT2.fileName + "," + fseErrors[1].timeInRed + "," + fseErrors[1].CO2LogsMissed + "," + fseErrors[1].CO2LogsMissedPercentage + "," + fseErrors[1].connChecksMissed + "," + fseErrors[1].connChecksMissedPercentage + ",");
+				feedbackWriter3.newLine();
+			} else {
+				feedbackWriter3.write(runT2.fileName + "," + fseErrors[0].timeInRed + "," + fseErrors[0].CO2LogsMissed + "," + fseErrors[0].CO2LogsMissedPercentage + "," + fseErrors[0].connChecksMissed + "," + fseErrors[0].connChecksMissedPercentage + ",");
+				feedbackWriter3.write(runT1.fileName + "," + fseErrors[1].timeInRed + "," + fseErrors[1].CO2LogsMissed + "," + fseErrors[1].CO2LogsMissedPercentage + "," + fseErrors[1].connChecksMissed + "," + fseErrors[1].connChecksMissedPercentage + ",");
+				feedbackWriter3.newLine();
+			}
+			
 
 			if (runStatsRed[2].delay == 1) {
 				feedbackWriter2.write(runStatsRed[2].totalTimeInRed +","+ runStatsRed[2].co2LogsMissed +","+ runStatsRed[2].co2LogsMissedPercentage +","+ runStatsRed[2].connChecksMissed +","+ runStatsRed[2].connChecksMissedPercentage + ",");
@@ -87,6 +132,7 @@ public class Extractor {
 			}
 			feedbackWriter.close();
 			feedbackWriter2.close();
+			feedbackWriter3.close();
 	}		
 	
 	private static RunStatsInRed extractFSEInfo(RunType runT, File fsedata) throws IOException{
@@ -668,6 +714,7 @@ public class Extractor {
 							fsePioneerError[0].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[0].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[0].leg = runT.leg;
+							fsePioneerError[0].delay = runT.delay;
 							//System.out.println("S1 Begin: " + fsePioneerError[0].timeBegin + "; End: " + fsePioneerError[0].timeEnd);
 							break;
 						case "OXYGEN_VALVE_STUCK_OPEN" :
@@ -677,6 +724,7 @@ public class Extractor {
 							fsePioneerError[1].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[1].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[1].leg = runT.leg;
+							fsePioneerError[1].delay = runT.delay;
 							//System.out.println("S2 Begin: " + fsePioneerError[1].timeBegin + "; End: " + fsePioneerError[1].timeEnd);
 							break;
 						case "MIXER_BLOCK": 
@@ -686,6 +734,7 @@ public class Extractor {
 							fsePioneerError[2].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[2].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[2].leg = runT.leg;
+							fsePioneerError[2].delay = runT.delay;
 							//System.out.println("D1 Begin: " + fsePioneerError[2].timeBegin + "; End: " + fsePioneerError[2].timeEnd);
 							break;
 						case "OXYGEN_SENSOR_STARTS_LOWER_TH" :
@@ -695,6 +744,7 @@ public class Extractor {
 							fsePioneerError[3].timeBegin = errorStatsList[j].timeOccurred;
 							fsePioneerError[3].timeEnd = errorStatsList[j].timeOccurred + errorStatsList[j].timeInRed;
 							fsePioneerError[3].leg = runT.leg;
+							fsePioneerError[3].delay = runT.delay;
 							//System.out.println("D2 Begin: " + fsePioneerError[3].timeBegin + "; End: " + fsePioneerError[3].timeEnd);
 							break;
 						default: break;

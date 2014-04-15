@@ -4,6 +4,7 @@ public class FSE_PioneerErrors {
 	String pioneerError;
 	String pioneerErrorType;	// S1, S2, D1 or D2
 	int leg; 					// 1 or 2
+	int delay;					// 0 or 1
 	int timeBegin;
 	int timeEnd;
 	int timeInRed;
@@ -20,5 +21,11 @@ public class FSE_PioneerErrors {
 	
 	public FSE_PioneerErrors() {
 		timeInRed = 0;
+		CO2LogsMissed = 0;
+		CO2LogsOccurred = 0;
+		CO2LogsMissedPercentage = 0;
+		connChecksMissed = 0;
+		connChecksOccurred = 0;
+		connChecksMissedPercentage = 0;
 	}
 }

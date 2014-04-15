@@ -56,6 +56,32 @@ public class DataX {
 			e.printStackTrace();
 		}		
 		
+		// FSE Data File
+		File fsePioneerDelay = new File(".\\src\\fsePioneerDelay.txt");		
+		if(fsePioneerDelay.exists())
+			fsePioneerDelay.delete();
+		else {
+			try {
+				fsePioneerDelay.createNewFile();
+			} catch (IOException ioe) {
+				System.err.println(ioe);
+				System.exit(1);
+			}
+		}
+		
+		BufferedWriter feedbackWriter3;
+		try {
+			feedbackWriter3 = new BufferedWriter(new FileWriter(fsePioneerDelay, true));
+			feedbackWriter3.write(",NTD LEG ,,,,,TD LEG,,,,");
+			feedbackWriter3.newLine();
+			feedbackWriter3.write("FileName, TIME IN RED,# CO2 LOGS MISSED,%CO2 LOGS MISSED,# CONNECTION CHECKS MISSED,% CONNECTION CHECKS MISSED, FileName, TIME IN RED,# CO2 LOGS MISSED,%CO2 LOGS MISSED,# CONNECTION CHECKS MISSED,% CONNECTION CHECKS MISSED");
+			feedbackWriter3.newLine();
+			feedbackWriter3.close();
+			
+		} catch (IOException ioe) {
+			System.err.println(ioe);
+			System.exit(1);
+		}
 		
 		// Pioneer Data File
 		File pdata = new File(".\\src\\pioneerdata.txt");
@@ -93,7 +119,7 @@ public class DataX {
 			if (fileLoc.endsWith("v.txt")) {				
 				Run run = new Run(2, listOfFiles[i++], listOfFiles[i++], listOfFiles[i++], listOfFiles[i++]);
 				Extractor.fsePioneerError = new FSE_PioneerErrors[4];
-				Extractor.extract(run, fsedata, pdata);
+				Extractor.extract(run, fsedata, pdata, fsePioneerDelay);
 				try {
 					feedbackWriter = new BufferedWriter(new FileWriter(fsedata, true));
 					feedbackWriter.newLine();
@@ -114,7 +140,7 @@ public class DataX {
 			else if (fileLoc.endsWith("t.txt")) {				
 				Run run = new Run(1, listOfFiles[i++], listOfFiles[i++], listOfFiles[i++], listOfFiles[i++]);
 				Extractor.fsePioneerError = new FSE_PioneerErrors[4];
-				Extractor.extract(run, fsedata, pdata);
+				Extractor.extract(run, fsedata, pdata, fsePioneerDelay);
 				try {
 					feedbackWriter = new BufferedWriter(new FileWriter(fsedata, true));
 					feedbackWriter.newLine();
